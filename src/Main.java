@@ -3,8 +3,12 @@ import java.util.Random;
 public class Main {
 	
 	public static void main(String[] args){
-		FEC forward_error_correction = new FEC(256, 32);
-		boolean[] test = new boolean[32];
+		testFEC();
+	}
+
+	private static void testFEC() {
+		FEC forward_error_correction = new FEC(256, 223, 8);
+		boolean[] test = new boolean[256-32];
 		Random rand = new Random();
 		int max = 1;
 		int min = 0;

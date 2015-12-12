@@ -6,18 +6,21 @@ public class FEC {
      *
      *  n=no_data_bits & k= no_parity bits
      */
-    private int k;
     private int n;
+    private int k;
+    private int s;
     private boolean [][] encoding;
     private boolean [][] inverse;
+    private boolean[] ORIGINAL_POLYNOMIAL = { true, false, true, true, true, false, false, false };
 
-    public FEC (int n, int k)
+    public FEC (int n, int k, int s)
     {
         /*
          * Robert McCaffrey
          */
-        this.n = n;
-        this.k = k; 
+        this.n = n; // 256
+        this.k = k; // 223
+        this.s = s; // 8
         this.encoding = create_encoding_matrix(n, k);
         this.inverse = inverse(this.encoding);
     }
@@ -26,9 +29,9 @@ public class FEC {
      *	Wesley Fung
      *  Encoding data
      */
-    public  boolean[][] encode(boolean[] data) {
-       boolean[][] matrix_2d = create_matrix_data(data); 
-       return multiply(matrix_2d, this.encoding);
+    public boolean[][] encode(boolean[] data) {
+        boolean[][] matrix_2d = create_matrix_data(data); 
+        return multiply(matrix_2d, this.encoding);
    }
 
      /**
@@ -44,77 +47,98 @@ public class FEC {
      * Robert McCaffrey
      *
      * Convert 1D array to 2D array
-     *
      */
     private boolean[][] create_matrix_data(boolean[] bits)
     {
-        int size = bits.length/2;
+        double sqrt = Math.sqrt(bits.length);
+        int size = (int)sqrt;
         boolean[][] matrix= new boolean[size][size];
         int index_bits=0;
         for(int i=0;i<size;i++) {
             for(int j=0;j<size;j++) {
-                matrix[i][j] = bits[index_bits++];
-                System.out.print(matrix[i][j] + " ");
+                matrix[i][j]=bits[index_bits++];
             }
-            System.out.print("\n");
         }
         return matrix;
     }
 
     /**
      * Robert McCaffrey
-     *
-     * Create the encoding matrix with an identity of size n and parity  of size n 
-     *
+     * Wesley Fung
+     * Create the encoding matrix with an identity of size n and parity of size k
      */
-    private boolean[][] create_encoding_matrix(int n,int k)
+    private boolean[][] create_encoding_matrix(int n, int k)
     {
-       double sqrt = Math.sqrt(n);
-       int size = (int) sqrt;
-      // Create Identity Matrix
-       boolean[][] encoding_matrix = create_identity_matrix(size);
-      //Create Random Number Generator between 0 and 1
-       Random rand = new Random();
-       int max=1;
-       int min=0;
-       int amount_parity_bits=k;
-      //Add Parity Bits to identity matrix
-       for(int i=size-1;i>0;i--)
-       {
-           for(int j1=0; j1<size;j1++)
-           {
-             if((rand.nextInt((max - min) + 1) + min)==0 )
-             {
-              encoding_matrix[i][j1]=false;
-          }
-          else
-          {
-              encoding_matrix[i][j1]=true;
-          }
-      }
-      if(amount_parity_bits--==0)
-        	break; // Create all parity bits
+        int size = (int) Math.sqrt(n+1); // sqrt 256
+        // Create Identity Matrix
+        boolean[][] identity_matrix = create_identity_matrix(n);
+        // Create Random Number Generator between 0 and 1
+        Random rand = new Random();
+        int max = 1;
+        int min = 0;
+        int parity_bytes = (size * 2) / this.s;
+        boolean[][] parity_matrix = new boolean[parity_bytes][this.s];
+        boolean[] polynomial = this.ORIGINAL_POLYNOMIAL;
+        // Add Parity Bits to Identity Matrix
+        for (int i=0; i<parity_bytes; i++) {
+            boolean last = polynomial[polynomial.length-1];
+            // Insert the polynomial values into Parity array
+            for (int j=0; j<this.s; j++) {
+                parity_matrix[i][j] = polynomial[j];
+            }
+            // Shift the polynomial to the right by one
+            for (int u=polynomial.length-2; u>=0; u--) {
+                polynomial[u+1] = polynomial[u];
+            }
+            polynomial[0] = last;
+        }
+        // Adding the parity bits to the identity matrix to form encoding matrix
+        boolean[][] encoding_matrix = new boolean[identity_matrix.length][this.s];
+        System.arraycopy(identity_matrix, 0, encoding_matrix, 0, identity_matrix.length);
+        System.arraycopy(parity_matrix, 0, encoding_matrix, identity_matrix.length-parity_matrix.length, parity_matrix.length);
+
+        // System.out.println("Encoding MATRIX");
+        // System.out.println("=====BEGIN=====");
+        // for (int p=0; p<n; p++) {
+        //     for (int l=0; l<this.s; l++) {
+        //         System.out.print(encoding_matrix[p][l] + " ");
+        //     }
+        //     System.out.print("\n");
+        // }
+        // System.out.println("=====END=====");
+        return encoding_matrix;
     }
-    assert(amount_parity_bits<-1);
-    return encoding_matrix;
-}
 
     /**
      * Robert McCaffrey
-     *
+     * Wesley Fung
      * where size is the dimension of your identity matrix I(size X size)
      */
     private boolean[][] create_identity_matrix(int size)
     {
-    	boolean[][] identity_matrix = new boolean[size][size];
-      // Create Identity Matrix
-      int j=0;
-      for(int i=0; i<size;i++)
-      {
-          identity_matrix[j++][i]=true;
-      }
-      return identity_matrix;
-  }
+    	boolean[][] identity_matrix = new boolean[size][this.s];
+        // Create Identity Matrix
+        for (int i=0; i<size; i++) {
+            for (int j=0; j<this.s; j++) {
+                if (i == j) {
+                    identity_matrix[i][j] = true;
+                } else {
+                    identity_matrix[i][j] = false;
+                }
+            }
+        }
+
+        // System.out.println("IDENTITY MATRIX");
+        // System.out.println("=====BEGIN=====");
+        // for (int k=0; k<size; k++) {
+        //     for (int l=0; l<this.s; l++) {
+        //         System.out.print(identity_matrix[k][l] + " ");
+        //     }
+        //     System.out.print("\n");
+        // }
+        // System.out.println("=====END=====");
+        return identity_matrix;
+    }
 
     /**    
     *  Wesley Fung
@@ -122,6 +146,7 @@ public class FEC {
     */
     private boolean[][] inverse(boolean[][] encoding) {
         boolean[][] identity = create_identity_matrix(encoding.length);
+        // System.out.println(identity.length + " " + encoding.length);
         return multiply(encoding, identity);
     }
 
@@ -151,24 +176,16 @@ public class FEC {
         int A_total = A.length;
         int A_row = A[0].length;
         int A_col = A_total / A_row;
-        int A_dimen;
-        if (A_row > A_col)
-            A_dimen = A_row;
-        else
-          A_dimen = A_col;
-      int B_total= B.length;
-      int B_row = B[0].length;
-      int B_col = B_total / B_row;
-      int B_dimen;
-      if (B_row > B_col)
-        B_dimen = B_row;
-    else
-        B_dimen = B_col; 
-    boolean[][] C = new boolean[A_dimen][B_dimen];
-    for (int i = 0; i < A_total; i++)
-        for (int j = 0; j < B_row; j++)
-            for (int k = 0; k < A_row; k++)
-                C[i][j] = A[i][k] & B[k][j];
-            return C;
-        }
+        int A_dimen = A_total;
+        int B_total= B.length;
+        int B_row = B[0].length;
+        int B_col = B_total / B_row;
+        int B_dimen = B_row;
+        boolean[][] C = new boolean[A_dimen][B_dimen];
+        for (int i = 0; i < A_total; i++)
+            for (int j = 0; j < B_row; j++)
+                for (int k = 0; k < A_row; k++)
+                    C[i][j] = A[i][k] && B[k][j];
+        return C;
     }
+}

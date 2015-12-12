@@ -149,7 +149,6 @@ public class FEC {
     */
     private boolean[][] inverse(boolean[][] encoding) {
         boolean[][] identity = create_identity_matrix(encoding.length);
-        // System.out.println(identity.length + " " + encoding.length);
         return multiply(encoding, identity);
     }
 
@@ -157,12 +156,12 @@ public class FEC {
     *  Wesley Fung
     *  Converts a 2D array into a 1D array
     */
-    private boolean[] decreate_matrix_data(boolean[][] matrix) {
-        int matrix_size = matrix[0].length;
-        boolean[] data = new boolean[matrix_size * 2];
+    public boolean[] decreate_matrix_data(boolean[][] matrix) {
+        int matrix_size = matrix.length;
+        boolean[] data = new boolean[matrix_size * matrix[0].length];
         int data_index_counter = 0;
         for (int i = 0; i < matrix_size; i++) {
-            for (int j = 0; j < matrix_size; j++) {
+            for (int j = 0; j < matrix[0].length; j++) {
                 data[data_index_counter] = matrix[i][j];
                 data_index_counter++;
             }

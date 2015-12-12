@@ -31,7 +31,6 @@ public class Main {
 		boolean[][] encoded_data = forward_error_correction.encode(test);
 		int total = encoded_data.length;
 		int cols = encoded_data[0].length;
-		int rows = total / cols;
 		for (int i=0; i<total; i++) {
 			for (int j=0; j<cols; j++) {
 				System.out.print(encoded_data[i][j] + " ");
@@ -39,6 +38,18 @@ public class Main {
 			System.out.print("\n");
 		}
 		System.out.print("=====END=====\n");
+
 		// SEND encoded_data
+
+		boolean[] decode_test = forward_error_correction.decreate_matrix_data(encoded_data);
+		boolean[][] decode_test_2d = forward_error_correction.decode(decode_test);
+		int decode_total = decode_test_2d.length;
+		int decode_cols = decode_test_2d[0].length;
+		for (int m=0; m<decode_total; m++) {
+			for (int n=0; n<decode_cols; n++) {
+				System.out.print(decode_test_2d[m][n] + " ");
+			}
+			System.out.print("\n");
+		}
 	}
 }

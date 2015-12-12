@@ -66,7 +66,7 @@ public class FEC {
      */
     private boolean[][] create_encoding_matrix(int n,int k)
     {
-            int size = n-1;
+            int size = n+1;
             // Create Identity Matrix
             boolean[][] encoding_matrix = create_identity_matrix(size);
             //Create Random Number Generator between 0 and 1
@@ -75,7 +75,7 @@ public class FEC {
             int min=0;
         int amount_parity_bits=k;
         //Add Parity Bits to identity matrix
-            for(int i=size;i>0;i--)
+            for(int i=size-1;i>0;i--)
             {
                     for(int j1=0; j1<size;j1++)
                     {

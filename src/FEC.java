@@ -11,15 +11,15 @@ public class FEC {
     private boolean [][] encoding;
     private boolean [][] inverse;
 
-    public FEC( int k, int n)
+    public FEC (int n, int k)
     {
         /*
          * Robert McCaffrey
          */
-        this.n=n;
-        this.k=k; 
-        this.encoding=create_encoding_matrix( n, k);
-        this.inverse= inverse(this.encoding);
+        this.n = n;
+        this.k = k; 
+        this.encoding = create_encoding_matrix(n, k);
+        this.inverse = inverse(this.encoding);
     }
 
     /**
@@ -27,8 +27,8 @@ public class FEC {
      *  Encoding data
      */
      public  boolean[][] encode(boolean[] data) {
-             boolean[][] matrix_2d = create_matrix_data(data); 
-             return multiply(matrix_2d, this.encoding);
+     		boolean[][] matrix_2d = create_matrix_data(data); 
+        return multiply(matrix_2d, this.encoding);
      }
   
      /**
@@ -66,9 +66,9 @@ public class FEC {
      */
     private boolean[][] create_encoding_matrix(int n,int k)
     {
-            int size=n+1;
+            int size = n-1;
             // Create Identity Matrix
-            boolean[][] encoding_matrix =create_identity_matrix(size);
+            boolean[][] encoding_matrix = create_identity_matrix(size);
             //Create Random Number Generator between 0 and 1
             Random rand = new Random();
             int max=1;

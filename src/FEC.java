@@ -11,6 +11,8 @@ public class FEC {
     private int s;
     private boolean [][] encoding;
     private boolean [][] inverse;
+    // x^8 = x^4 + x^3 + x^2 + 1
+    // s = 8
     private boolean[] ORIGINAL_POLYNOMIAL = { true, false, true, true, true, false, false, false };
 
     public FEC (int n, int k, int s)
@@ -52,11 +54,12 @@ public class FEC {
     {
         double sqrt = Math.sqrt(bits.length);
         int size = (int)sqrt;
-        boolean[][] matrix= new boolean[size][size];
-        int index_bits=0;
+        boolean[][] matrix= new boolean[size][this.s];
+        int index_bits = 0;
         for(int i=0;i<size;i++) {
-            for(int j=0;j<size;j++) {
-                matrix[i][j]=bits[index_bits++];
+            for(int j=0;j<this.s;j++) {
+                matrix[i][j]=bits[index_bits];
+                index_bits++;
             }
         }
         return matrix;

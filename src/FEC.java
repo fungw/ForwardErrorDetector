@@ -68,33 +68,32 @@ public class FEC {
     {
 			double sqrt = Math.sqrt(n);
 			int size = (int) sqrt;
-            // Create Identity Matrix
-            boolean[][] encoding_matrix = create_identity_matrix(size);
-            //Create Random Number Generator between 0 and 1
-            Random rand = new Random();
-            int max=1;
-            int min=0;
-        int amount_parity_bits=k;
-        //Add Parity Bits to identity matrix
-            for(int i=size-1;i>0;i--)
-            {
-                    for(int j1=0; j1<size;j1++)
-                    {
-                            if((rand.nextInt((max - min) + 1) + min)==0 )
-                            {
-                                    encoding_matrix[i][j1]=false;
-
-                            }
-                            else
-                            {
-                                    encoding_matrix[i][j1]=true;
-                            }
-                    }
-                    if(amount_parity_bits--==0)
-                            break; // Create all parity bits
-            }
-            assert(amount_parity_bits<-1);
-            return encoding_matrix;
+      // Create Identity Matrix
+      boolean[][] encoding_matrix = create_identity_matrix(size);
+      //Create Random Number Generator between 0 and 1
+      Random rand = new Random();
+      int max=1;
+      int min=0;
+      int amount_parity_bits=k;
+      //Add Parity Bits to identity matrix
+      for(int i=size-1;i>0;i--)
+      {
+   	  	for(int j1=0; j1<size;j1++)
+        {
+        	if((rand.nextInt((max - min) + 1) + min)==0 )
+        	{
+        		encoding_matrix[i][j1]=false;
+        	}
+        	else
+        	{
+        		encoding_matrix[i][j1]=true;
+        	}
+      	}
+        if(amount_parity_bits--==0)
+        	break; // Create all parity bits
+        }
+        assert(amount_parity_bits<-1);
+        return encoding_matrix;
     }
 
     /**
@@ -104,14 +103,14 @@ public class FEC {
      */
     private boolean[][] create_identity_matrix(int size)
     {
-            boolean[][] identity_matrix = new boolean[size][size];
-            // Create Identity Matrix
-            int j=0;
-            for(int i=0; i<size;i++)
-            {
-                    identity_matrix[j++][i]=true;
-            }
-            return identity_matrix;
+    	boolean[][] identity_matrix = new boolean[size][size];
+      // Create Identity Matrix
+      int j=0;
+      for(int i=0; i<size;i++)
+      {
+    		identity_matrix[j++][i]=true;
+      }
+      return identity_matrix;
     }
  
     /**    

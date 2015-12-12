@@ -66,7 +66,8 @@ public class FEC {
      */
     private boolean[][] create_encoding_matrix(int n,int k)
     {
-            int size = n+1;
+			double sqrt = Math.sqrt(n);
+			int size = (int) sqrt;
             // Create Identity Matrix
             boolean[][] encoding_matrix = create_identity_matrix(size);
             //Create Random Number Generator between 0 and 1
@@ -144,17 +145,29 @@ public class FEC {
     *  Multiples two 2D boolean array together
     *  C = A * B
     */
-    private  boolean[][] multiply(boolean[][] A, boolean[][] B) {
-                int A_total = A.length;
-                int A_row_col = A[0].length;
-                int B_total= B.length;
-                int B_row_col = B[0].length;
-                if (A_row_col != B_total) throw new RuntimeException("Matrix dimensions do not match!");
-                    boolean[][] C = new boolean[A_total][B_row_col];
-                for (int i = 0; i < A_total; i++)
-                    for (int j = 0; j < B_row_col; j++)
-                    for (int k = 0; k < A_row_col; k++)
-                            C[i][j] = A[i][k] & B[k][j];
+ 	private  boolean[][] multiply(boolean[][] A, boolean[][] B) {
+        int A_total = A.length;
+        int A_row = A[0].length;
+        int A_col = A_total / A_row;
+        int A_dimen;
+        if (A_row > A_col)
+        A_dimen = A_row;
+        else
+          A_dimen = A_col;
+          int B_total= B.length;
+          int B_row = B[0].length;
+          int B_col = B_total / B_row;
+          int B_dimen;
+          if (B_row > B_col)
+            B_dimen = B_row;
+          else
+            B_dimen = B_col; 
+        boolean[][] C = new boolean[A_dimen][B_dimen];
+        for (int i = 0; i < A_total; i++)
+            for (int j = 0; j < B_row; j++)
+                for (int k = 0; k < A_row; k++)
+                    C[i][j] = A[i][k] & B[k][j];
                 return C;
         }
+	}
 }

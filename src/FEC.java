@@ -40,6 +40,7 @@ public class FEC {
     public boolean[][] encode(boolean[] data) {
         boolean[][] matrix_2d = create_matrix_data(data); 
         boolean[][] result = multiply(this.encoding, matrix_2d);
+        // Copies the Parity bits back into the message before it is sent
         System.arraycopy(this.PARITY_MATRIX, 0, result, this.IDENTITY_MATRIX.length-this.PARITY_MATRIX.length, this.PARITY_MATRIX.length);
 
         // System.out.println("\nENCODING:");

@@ -45,11 +45,14 @@ public class Main {
 		boolean[][] decode_test_2d = forward_error_correction.decode(decode_test);
 		int decode_total = decode_test_2d.length;
 		int decode_cols = decode_test_2d[0].length;
+		System.out.println("\nDecoding the message ...");
+		System.out.println("=====BEGIN=====");
 		for (int m=0; m<decode_total; m++) {
 			for (int n=0; n<decode_cols; n++) {
-				// System.out.print(decode_test_2d[m][n] + " ");
+				System.out.print(decode_test_2d[m][n] + " ");
 			}
-			// System.out.print("\n");
+			System.out.print("\n");
 		}
+		System.out.print("=====END=====\n");
 	}
 }

@@ -8,7 +8,7 @@ public class Main {
 
 	private static void testFEC() {
 		FEC forward_error_correction = new FEC(256, 223, 8);
-		boolean[] test = new boolean[256-32];
+		boolean[] test = new boolean[128];
 		Random rand = new Random();
 		int max = 1;
 		int min = 0;
@@ -20,7 +20,7 @@ public class Main {
 				test[i] = true;
 			else 
 				test[i] = false;
-			if (i == 16)
+			if ((i%8) == 0)
 				System.out.print("\n");
 			System.out.print(test[i] + " ");
 		}
@@ -47,9 +47,9 @@ public class Main {
 		int decode_cols = decode_test_2d[0].length;
 		for (int m=0; m<decode_total; m++) {
 			for (int n=0; n<decode_cols; n++) {
-				System.out.print(decode_test_2d[m][n] + " ");
+				// System.out.print(decode_test_2d[m][n] + " ");
 			}
-			System.out.print("\n");
+			// System.out.print("\n");
 		}
 	}
 }

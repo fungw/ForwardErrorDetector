@@ -11,8 +11,12 @@ public class FEC {
     private int s;
     private boolean [][] encoding;
     private boolean [][] inverse;
-    // x^8 = x^4 + x^3 + x^2 + 1
-    // s = 8
+
+    /*
+    *   Polynomial used to encode our message
+    *   x^8 = x^4 + x^3 + x^2 + 1
+    *   s = 8
+    */
     private boolean[] ORIGINAL_POLYNOMIAL = { true, false, true, true, true, false, false, false };
 
     public FEC (int n, int k, int s)
@@ -33,7 +37,32 @@ public class FEC {
      */
     public boolean[][] encode(boolean[] data) {
         boolean[][] matrix_2d = create_matrix_data(data); 
-        return multiply(matrix_2d, this.encoding);
+        boolean[][] result = multiply(this.encoding, matrix_2d);
+
+        // System.out.println("\nENCODING:");
+        // for (int i=0; i<encoding.length; i++) {
+        //     for (int j=0; j<encoding[0].length; j++) {
+        //         System.out.print(encoding[i][j] + " ");
+        //     }
+        //     System.out.print("\n");
+        // }
+
+        // System.out.println("\nMatrix2D:");
+        // for (int i=0; i<matrix_2d.length; i++) {
+        //     for (int j=0; j<matrix_2d[0].length; j++) {
+        //         System.out.print(matrix_2d[i][j] + " ");
+        //     }
+        //     System.out.print("\n");
+        // }
+
+        // System.out.println("\nRESULT:");
+        // for (int i=0; i<result.length; i++) {
+        //     for (int j=0; j<result[0].length; j++) {
+        //         System.out.print(result[i][j] + " ");
+        //     }
+        //     System.out.print("\n");
+        // }
+        return result;
    }
 
      /**
@@ -42,7 +71,7 @@ public class FEC {
      */
      public  boolean[][] decode(boolean[] data) {
          boolean[][] matrix_2d = create_matrix_data(data);
-         return multiply(matrix_2d, this.inverse);
+         return multiply(this.encoding, matrix_2d);
      }
 
     /**
@@ -149,6 +178,12 @@ public class FEC {
     */
     private boolean[][] inverse(boolean[][] encoding) {
         boolean[][] identity = create_identity_matrix(encoding.length);
+        // for (int i=0; i<encoding.length; i++) {
+        //     for (int j=0; j<encoding[0].length; j++) {
+        //         System.out.print(encoding[i][j] + " ");
+        //     }
+        //     System.out.print("\n");
+        // }
         return multiply(encoding, identity);
     }
 
@@ -175,19 +210,21 @@ public class FEC {
     *  C = A * B
     */
     private  boolean[][] multiply(boolean[][] A, boolean[][] B) {
-        int A_total = A.length;
-        int A_row = A[0].length;
-        int A_col = A_total / A_row;
+        int A_total = A.length; //256
+        int A_row = A[0].length; //8
+        int A_col = A_total / A_row; //32
         int A_dimen = A_total;
-        int B_total= B.length;
-        int B_row = B[0].length;
-        int B_col = B_total / B_row;
+        int B_total= B.length; //256, 14, 45
+        int B_row = B[0].length; //8
+        int B_col = B_total / B_row; //32, 1, 5
         int B_dimen = B_row;
         boolean[][] C = new boolean[A_dimen][B_dimen];
         for (int i = 0; i < A_total; i++)
             for (int j = 0; j < B_row; j++)
-                for (int k = 0; k < A_row; k++)
-                    C[i][j] = A[i][k] && B[k][j];
+                for (int k = 0; k < A_row; k++) {
+                    C[i][j] = C[i][j] || A[i][k] && B[k][j];
+                    // System.out.println(C[i][j] + " = " + A[i][k] + " + " + B[k][j]);
+                }
         return C;
     }
 }

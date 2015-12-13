@@ -8,7 +8,7 @@ public class Main {
 
 	private static void testFEC() {
 		FEC forward_error_correction = new FEC(256, 223, 8);
-		boolean[] test = new boolean[128];
+		boolean[] test = new boolean[64];
 		Random rand = new Random();
 		int max = 1;
 		int min = 0;

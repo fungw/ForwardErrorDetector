@@ -18,6 +18,8 @@ public class FEC {
     *   s = 8
     */
     private boolean[] ORIGINAL_POLYNOMIAL = { true, false, true, true, true, false, false, false };
+    private boolean[][] IDENTITY_MATRIX;
+    private boolean[][] PARITY_MATRIX;
 
     public FEC (int n, int k, int s)
     {
@@ -38,6 +40,7 @@ public class FEC {
     public boolean[][] encode(boolean[] data) {
         boolean[][] matrix_2d = create_matrix_data(data); 
         boolean[][] result = multiply(this.encoding, matrix_2d);
+        System.arraycopy(this.PARITY_MATRIX, 0, result, this.IDENTITY_MATRIX.length-this.PARITY_MATRIX.length, this.PARITY_MATRIX.length);
 
         // System.out.println("\nENCODING:");
         // for (int i=0; i<encoding.length; i++) {
@@ -104,10 +107,6 @@ public class FEC {
         int size = (int) Math.sqrt(n+1); // sqrt 256
         // Create Identity Matrix
         boolean[][] identity_matrix = create_identity_matrix(n);
-        // Create Random Number Generator between 0 and 1
-        Random rand = new Random();
-        int max = 1;
-        int min = 0;
         int parity_bytes = (size * 2) / this.s;
         boolean[][] parity_matrix = new boolean[parity_bytes][this.s];
         boolean[] polynomial = this.ORIGINAL_POLYNOMIAL;
@@ -126,6 +125,8 @@ public class FEC {
         }
         // Adding the parity bits to the identity matrix to form encoding matrix
         boolean[][] encoding_matrix = new boolean[identity_matrix.length][this.s];
+        this.IDENTITY_MATRIX = identity_matrix;
+        this.PARITY_MATRIX = parity_matrix;
         System.arraycopy(identity_matrix, 0, encoding_matrix, 0, identity_matrix.length);
         System.arraycopy(parity_matrix, 0, encoding_matrix, identity_matrix.length-parity_matrix.length, parity_matrix.length);
 
@@ -144,7 +145,6 @@ public class FEC {
     /**
      * Robert McCaffrey
      * Wesley Fung
-     * where size is the dimension of your identity matrix I(size X size)
      */
     private boolean[][] create_identity_matrix(int size)
     {
@@ -218,12 +218,12 @@ public class FEC {
         int B_row = B[0].length; //8
         int B_col = B_total / B_row; //32, 1, 5
         int B_dimen = B_row;
+        // if (B.length != A_row) throw new RuntimeException("Illegal matrix dimensions.");
         boolean[][] C = new boolean[A_dimen][B_dimen];
         for (int i = 0; i < A_total; i++)
             for (int j = 0; j < B_row; j++)
                 for (int k = 0; k < A_row; k++) {
-                    C[i][j] = C[i][j] || A[i][k] && B[k][j];
-                    // System.out.println(C[i][j] + " = " + A[i][k] + " + " + B[k][j]);
+                    C[i][j] = C[i][j] || (A[i][k] && B[k][j]);
                 }
         return C;
     }

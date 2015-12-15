@@ -43,33 +43,112 @@ public class FEC {
         // Copies the Parity bits back into the message before it is sent
         System.arraycopy(this.PARITY_MATRIX, 0, result, this.IDENTITY_MATRIX.length-this.PARITY_MATRIX.length, this.PARITY_MATRIX.length);
 
-        // System.out.println("\nENCODING:");
-        // for (int i=0; i<encoding.length; i++) {
-        //     for (int j=0; j<encoding[0].length; j++) {
-        //         System.out.print(encoding[i][j] + " ");
-        //     }
-        //     System.out.print("\n");
-        // }
-
-        // System.out.println("\nMatrix2D:");
-        // for (int i=0; i<matrix_2d.length; i++) {
-        //     for (int j=0; j<matrix_2d[0].length; j++) {
-        //         System.out.print(matrix_2d[i][j] + " ");
-        //     }
-        //     System.out.print("\n");
-        // }
-
-        // System.out.println("\nRESULT:");
-        // for (int i=0; i<result.length; i++) {
-        //     for (int j=0; j<result[0].length; j++) {
-        //         System.out.print(result[i][j] + " ");
-        //     }
-        //     System.out.print("\n");
-        // }
         return result;
    }
+    /**
+     * Gulnur Ualiyeva
+     * 
+     */
+    public static boolean[] byteArray2BoolArray(byte[] bytes) {
+	    boolean[] res = new boolean[bytes.length * 8];
+	    for (int i = 0; i < bytes.length * 8; i++) {
+	      if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0)
+	        res[i] = true;
+	    }
+	    return res;
+	  }
+    
+    public static byte[] boolArray2ByteArray(boolean[] bools) {
+		byte[]res = new byte[bools.length/8];
+		for(int i = 0; i< bools.length/8; i++ ){
+			if(bools[i]){
+				res[i] = 1;
+			}else{
+				res[i] = 0;
+			}
+		}
+		return res;
+	}
+    /**
+    *  Michael Stroughair and Gulnur Ualiyeva
+    *  Interleaving Data
+    */
+    boolean[][] transpose_matrix_data(boolean[][]data){
+    	boolean[][] transposed = new boolean [data[0].length][data.length];
+		for(int i = 0; i < data[0].length; i++){
+    		for(int j = 0; j < data.length; j++){
+    			transposed[i][j] = data[j][i];
+    		}
+    	}
+		return transposed;    	
+    }
+    
+    /**
+    *  Michael Stroughair
+    *  Main Functions to be called
+    */  
+    
+    boolean[] FECencode(int symbols, int typeOfCoding, byte[] input_data, boolean fec, boolean interleave) 
+{   	
+    	FEC forward_error_correction;			//create our FEC class
+    	boolean[] output_data = null; 			//Hold our Boolean[] data, and is the value returned at the end
+    	boolean[][] encoded_data = null;		//Hold any Boolean[][]data that we have in the interim
+    	output_data = byteArray2BoolArray(input_data);//Give return data the value stored in the input value
+    	
+    	switch (typeOfCoding){
+			case 0:	//Reed Solomon (255, 251)
+				forward_error_correction= new FEC(255, 251, 8);
+				break;
+			case 1: //Reed Solomon (255, 239)
+				forward_error_correction = new FEC(255, 239, 8);
+				break;
+			case 2: //Reed Solomon (255, 223)
+				forward_error_correction = new FEC(255, 223, 8);
+				break;
+			default:
+				return output_data;			
+    	}
+    	encoded_data = forward_error_correction.encode(output_data);
+    	if (interleave)
+    		encoded_data = forward_error_correction.transpose_matrix_data(encoded_data);
+    	
+    	output_data = forward_error_correction.decreate_matrix_data(encoded_data);
+				
+    	return output_data;	
+    }
+    
+    byte[] FECdecode(int symbols, int typeOfCoding, boolean[] input_data, boolean fec, boolean interleave)
+    {
+    	FEC forward_error_correction;
+    	byte[] byte_data = null;
+    	boolean[][] decoded_data = null;
+ 
+    	switch (typeOfCoding){
+		case 0:	//Reed Solomon (255, 251)
+			forward_error_correction= new FEC(255, 251, 8);
+			break;
+		case 1: //Reed Solomon (255, 239)
+			forward_error_correction = new FEC(255, 239, 8);
+			break;
+		case 2: //Reed Solomon (255, 223)
+			forward_error_correction = new FEC(255, 223, 8);
+			break;
+		default:
+			byte_data = boolArray2ByteArray(input_data);
+			return byte_data;			
+    	}
 
-     /**
+       	decoded_data = forward_error_correction.create_matrix_data(input_data);
+    	if (interleave)
+    		decoded_data = forward_error_correction.transpose_matrix_data(decoded_data);
+    	
+    	boolean [] decoded_data_1d = decreate_matrix_data(decoded_data);
+    	decoded_data = forward_error_correction.decode(decoded_data_1d);
+    	decoded_data_1d = decreate_matrix_data(decoded_data);
+    	byte_data = boolArray2ByteArray(decoded_data_1d);
+    	return byte_data;
+    }
+    /**
      *  Wesley Fung
      *  Decoding data
      */
@@ -131,15 +210,6 @@ public class FEC {
         System.arraycopy(identity_matrix, 0, encoding_matrix, 0, identity_matrix.length);
         System.arraycopy(parity_matrix, 0, encoding_matrix, identity_matrix.length-parity_matrix.length, parity_matrix.length);
 
-        // System.out.println("Encoding MATRIX");
-        // System.out.println("=====BEGIN=====");
-        // for (int p=0; p<n; p++) {
-        //     for (int l=0; l<this.s; l++) {
-        //         System.out.print(encoding_matrix[p][l] + " ");
-        //     }
-        //     System.out.print("\n");
-        // }
-        // System.out.println("=====END=====");
         return encoding_matrix;
     }
 
@@ -161,15 +231,6 @@ public class FEC {
             }
         }
 
-        // System.out.println("IDENTITY MATRIX");
-        // System.out.println("=====BEGIN=====");
-        // for (int k=0; k<size; k++) {
-        //     for (int l=0; l<this.s; l++) {
-        //         System.out.print(identity_matrix[k][l] + " ");
-        //     }
-        //     System.out.print("\n");
-        // }
-        // System.out.println("=====END=====");
         return identity_matrix;
     }
 
@@ -179,12 +240,7 @@ public class FEC {
     */
     private boolean[][] inverse(boolean[][] encoding) {
         boolean[][] identity = create_identity_matrix(encoding.length);
-        // for (int i=0; i<encoding.length; i++) {
-        //     for (int j=0; j<encoding[0].length; j++) {
-        //         System.out.print(encoding[i][j] + " ");
-        //     }
-        //     System.out.print("\n");
-        // }
+       
         return multiply(encoding, identity);
     }
 

@@ -1,17 +1,11 @@
 import java.util.Random;
 
 public class FEC {
-    /*
-     *	Description:  R(255,223) n=223 k=32 [k= 255-223]
-     *
-     *  n=no_data_bits & k= no_parity bits
-     */
     private int n;
     private int k;
     private int s;
     private boolean [][] encoding;
     private boolean [][] inverse;
-
     /*
     *   Polynomial used to encode our message
     *   x^8 = x^4 + x^3 + x^2 + 1
@@ -24,7 +18,8 @@ public class FEC {
     public FEC (int n, int k, int s)
     {
         /*
-         * Robert McCaffrey
+         *  Robert McCaffrey
+         *  Constructor
          */
         this.n = n; // 256
         this.k = k; // 223
@@ -35,19 +30,18 @@ public class FEC {
 
     /**
      *	Wesley Fung
-     *  Encoding data
+     *  Encoding data.
      */
     public boolean[][] encode(boolean[] data) {
         boolean[][] matrix_2d = create_matrix_data(data); 
         boolean[][] result = multiply(this.encoding, matrix_2d);
         // Copies the Parity bits back into the message before it is sent
-        System.arraycopy(this.PARITY_MATRIX, 0, result, this.IDENTITY_MATRIX.length-this.PARITY_MATRIX.length, this.PARITY_MATRIX.length);
-
+        System.arraycopy(this.PARITY_MATRIX, 0, result, result.length-this.PARITY_MATRIX.length, this.PARITY_MATRIX.length);
         return result;
    }
     /**
-     * Gulnur Ualiyeva
-     * 
+     *  Gulnur Ualiyeva
+     *  Byte array to boolean array and vice versa.
      */
     public static boolean[] byteArray2BoolArray(byte[] bytes) {
 	    boolean[] res = new boolean[bytes.length * 8];
@@ -69,9 +63,10 @@ public class FEC {
 		}
 		return res;
 	}
+
     /**
     *  Michael Stroughair and Gulnur Ualiyeva
-    *  Interleaving Data
+    *  Interleaving Data.
     */
     boolean[][] transpose_matrix_data(boolean[][]data){
     	boolean[][] transposed = new boolean [data[0].length][data.length];
@@ -89,7 +84,7 @@ public class FEC {
     */  
     
     boolean[] FECencode(int symbols, int typeOfCoding, byte[] input_data, boolean fec, boolean interleave) 
-{   	
+		{   	
     	FEC forward_error_correction;			//create our FEC class
     	boolean[] output_data = null; 			//Hold our Boolean[] data, and is the value returned at the end
     	boolean[][] encoded_data = null;		//Hold any Boolean[][]data that we have in the interim
@@ -112,7 +107,7 @@ public class FEC {
     	if (interleave)
     		encoded_data = forward_error_correction.transpose_matrix_data(encoded_data);
     	
-    	output_data = forward_error_correction.decreate_matrix_data(encoded_data);
+    	output_data = forward_error_correction.matrix_2d_1d(encoded_data);
 				
     	return output_data;	
     }
@@ -142,30 +137,29 @@ public class FEC {
     	if (interleave)
     		decoded_data = forward_error_correction.transpose_matrix_data(decoded_data);
     	
-    	boolean [] decoded_data_1d = decreate_matrix_data(decoded_data);
+    	boolean [] decoded_data_1d = matrix_2d_1d(decoded_data);
     	decoded_data = forward_error_correction.decode(decoded_data_1d);
-    	decoded_data_1d = decreate_matrix_data(decoded_data);
+    	decoded_data_1d = matrix_2d_1d(decoded_data);
     	byte_data = boolArray2ByteArray(decoded_data_1d);
     	return byte_data;
     }
     /**
      *  Wesley Fung
-     *  Decoding data
+     *  Decoding function.
      */
      public  boolean[][] decode(boolean[] data) {
-         boolean[][] matrix_2d = create_matrix_data(data);
-         return multiply(this.encoding, matrix_2d);
-     }
+        boolean[][] matrix_2d = create_matrix_data(data);
+        return multiply(matrix_2d, this.encoding);
+    }
 
     /**
-     * Robert McCaffrey
-     *
-     * Convert 1D array to 2D array
+     *  Robert McCaffrey
+     *  Convert 1D array to 2D array.
      */
     private boolean[][] create_matrix_data(boolean[] bits)
     {
-        double sqrt = Math.sqrt(bits.length);
-        int size = (int)sqrt;
+        // double sqrt = Math.sqrt(bits.length);
+        int size = bits.length/this.s;
         boolean[][] matrix= new boolean[size][this.s];
         int index_bits = 0;
         for(int i=0;i<size;i++) {
@@ -178,9 +172,10 @@ public class FEC {
     }
 
     /**
-     * Robert McCaffrey
-     * Wesley Fung
-     * Create the encoding matrix with an identity of size n and parity of size k
+     *  Wesley Fung
+     *  Creates the encoding matrix. This function applies the predefined
+     *  polynomial encoder "this.ORIGINAL_POLYNOMIAL" to an identity matrix 
+     *  to form our encoding matrix.
      */
     private boolean[][] create_encoding_matrix(int n, int k)
     {
@@ -208,14 +203,14 @@ public class FEC {
         this.IDENTITY_MATRIX = identity_matrix;
         this.PARITY_MATRIX = parity_matrix;
         System.arraycopy(identity_matrix, 0, encoding_matrix, 0, identity_matrix.length);
-        System.arraycopy(parity_matrix, 0, encoding_matrix, identity_matrix.length-parity_matrix.length, parity_matrix.length);
-
+        System.arraycopy(parity_matrix, 0, encoding_matrix, encoding_matrix.length-parity_matrix.length, parity_matrix.length);
         return encoding_matrix;
     }
 
     /**
-     * Robert McCaffrey
-     * Wesley Fung
+     *  Robert McCaffrey
+     *  Wesley Fung
+     *  Generates an identity matrix.
      */
     private boolean[][] create_identity_matrix(int size)
     {
@@ -236,19 +231,19 @@ public class FEC {
 
     /**    
     *  Wesley Fung
-    *  Generate an inverse of the encoding
+    *  Generate an inverse of the encoding.
     */
     private boolean[][] inverse(boolean[][] encoding) {
         boolean[][] identity = create_identity_matrix(encoding.length);
-       
         return multiply(encoding, identity);
     }
 
     /**
     *  Wesley Fung
-    *  Converts a 2D array into a 1D array
+    *  Converts a 2D array into a 1D array.
+    *  This is used after data is encoded. Need 1D array to send.
     */
-    public boolean[] decreate_matrix_data(boolean[][] matrix) {
+    public boolean[] matrix_2d_1d(boolean[][] matrix) {
         int matrix_size = matrix.length;
         boolean[] data = new boolean[matrix_size * matrix[0].length];
         int data_index_counter = 0;
@@ -263,19 +258,19 @@ public class FEC {
 
     /**
     *  Wesley Fung
-    *  Multiples two 2D boolean array together
+    *  Multiples two 2D boolean array together.
+    *  Matrix multiplication is not commutative!
     *  C = A * B
     */
     private  boolean[][] multiply(boolean[][] A, boolean[][] B) {
-        int A_total = A.length; //256
-        int A_row = A[0].length; //8
-        int A_col = A_total / A_row; //32
+        int A_total = A.length;
+        int A_row = A[0].length; 
+        int A_col = A_total / A_row;
         int A_dimen = A_total;
-        int B_total= B.length; //256, 14, 45
-        int B_row = B[0].length; //8
-        int B_col = B_total / B_row; //32, 1, 5
+        int B_total= B.length; 
+        int B_row = B[0].length; 
+        int B_col = B_total / B_row; 
         int B_dimen = B_row;
-        // if (B.length != A_row) throw new RuntimeException("Illegal matrix dimensions.");
         boolean[][] C = new boolean[A_dimen][B_dimen];
         for (int i = 0; i < A_total; i++)
             for (int j = 0; j < B_row; j++)
@@ -284,4 +279,5 @@ public class FEC {
                 }
         return C;
     }
+	
 }

@@ -20,9 +20,9 @@ public class Main {
 				test[i] = true;
 			else 
 				test[i] = false;
-//			if ((i%8) == 0)
-//				System.out.print("\n");
-//			System.out.print(test[i] + " ");
+			if ((i%8) == 0)
+				System.out.print("\n");
+			System.out.print(test[i] + " ");
 		}
 		System.out.print("\n=====END=====\n");
 
@@ -44,7 +44,6 @@ public class Main {
 		System.out.print("=====END=====\n");
 		encoded_data = forward_error_correction.transpose_matrix_data(encoded_data);
 		System.out.print("=====Deinterleaved=====\n");
-		// SEND encoded_data
 		//***********************************//
 		//*Prints out Newly Interleaved Data*//
 		//***********************************//
@@ -57,7 +56,8 @@ public class Main {
 			System.out.print("\n");
 		}
 		encoded_data = forward_error_correction.transpose_matrix_data(encoded_data);
-		boolean[] decode_test = forward_error_correction.decreate_matrix_data(encoded_data);
+		boolean[] decode_test = forward_error_correction.matrix_2d_1d(encoded_data);
+
 		boolean[][] decode_test_2d = forward_error_correction.decode(decode_test);
 		int decode_total = decode_test_2d.length;
 		int decode_cols = decode_test_2d[0].length;
@@ -65,9 +65,9 @@ public class Main {
 		System.out.println("=====BEGIN=====");
 		for (int m=0; m<decode_total; m++) {
 			for (int n=0; n<decode_cols; n++) {
-//				System.out.print(decode_test_2d[m][n] + " ");
+				System.out.print(decode_test_2d[m][n] + " ");
 			}
-//			System.out.print("\n");
+			System.out.print("\n");
 		}
 		System.out.print("=====END=====\n");
 	}
